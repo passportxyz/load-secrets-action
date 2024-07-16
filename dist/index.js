@@ -30156,17 +30156,14 @@ const loadAllSecretsAction = async () => {
         const itemsList = dist.item.list({ vault: "Test" });
         itemsList.forEach(({ title }) => {
             const thisItem = dist.item.get(title, { vault: "Test" });
-            console.log(JSON.stringify(thisItem, null, 2));
             thisItem.fields?.forEach(({ id, value }) => {
                 if (!value)
                     return;
-                // Masks this value in all logs
+                // Masks this value in all subsequent logs
                 lib_core.setSecret(value);
                 secrets[id] = value;
             });
         });
-        console.log("All secrets:");
-        console.log(JSON.stringify(secrets, null, 2));
         lib_core.setOutput("secrets", JSON.stringify(secrets));
     }
     catch (error) {

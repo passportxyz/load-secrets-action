@@ -27,9 +27,6 @@ const loadAllSecretsAction = async () => {
 			});
 		});
 
-		console.log("All secrets:");
-		console.log(JSON.stringify(secrets, null, 2));
-
 		core.setOutput("secrets", JSON.stringify(secrets));
 	} catch (error) {
 		// It's possible for the Error constructor to be modified to be anything
