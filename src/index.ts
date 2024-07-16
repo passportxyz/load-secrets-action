@@ -18,11 +18,10 @@ const loadAllSecretsAction = async () => {
 		const itemsList = item.list({ vault: "Test" });
 		itemsList.forEach(({ title }) => {
 			const thisItem = item.get(title, { vault: "Test" });
-			console.log(JSON.stringify(thisItem, null, 2));
 			thisItem.fields?.forEach(({ id, value }) => {
 				if (!value) return;
 
-				// Masks this value in all logs
+				// Masks this value in all subsequent logs
 				core.setSecret(value);
 				secrets[id] = value;
 			});
