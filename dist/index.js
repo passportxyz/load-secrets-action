@@ -30146,7 +30146,7 @@ const unsetPrevious = () => {
 
 
 
-const loadSecretsAction = async () => {
+const loadAllSecretsAction = async () => {
     try {
         // Get action inputs
         const shouldUnsetPrevious = core.getBooleanInput("unset-previous");
@@ -30159,6 +30159,8 @@ const loadSecretsAction = async () => {
         validateAuth();
         // Download and install the CLI
         await installCLI();
+        const itemsList = dist.item.list({ vault: "Test" });
+        console.log(JSON.stringify(itemsList, null, 2));
         // Load secrets
         await loadSecrets(shouldExportEnv);
     }
@@ -30197,7 +30199,7 @@ const installCLI = async () => {
         }
     });
 };
-void loadSecretsAction();
+void loadAllSecretsAction();
 
 })();
 
