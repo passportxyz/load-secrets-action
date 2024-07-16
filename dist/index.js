@@ -30158,13 +30158,16 @@ const loadAllSecretsAction = async () => {
             const thisItem = dist.item.get(title, { vault: "Test" });
             console.log(JSON.stringify(thisItem, null, 2));
             thisItem.fields?.forEach(({ id, value }) => {
-                if (value)
-                    secrets[id] = value;
+                if (!value)
+                    return;
+                // Masks this value in all logs
+                lib_core.setSecret(value);
+                secrets[id] = value;
             });
         });
         console.log("All secrets:");
         console.log(JSON.stringify(secrets, null, 2));
-        lib_core.setOutput("secrets", "::add-mask::" + JSON.stringify(secrets));
+        lib_core.setOutput("secrets", JSON.stringify(secrets));
     }
     catch (error) {
         // It's possible for the Error constructor to be modified to be anything

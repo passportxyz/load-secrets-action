@@ -20,14 +20,18 @@ const loadAllSecretsAction = async () => {
 			const thisItem = item.get(title, { vault: "Test" });
 			console.log(JSON.stringify(thisItem, null, 2));
 			thisItem.fields?.forEach(({ id, value }) => {
-				if (value) secrets[id] = value;
+				if (!value) return;
+
+				// Masks this value in all logs
+				core.setSecret(value);
+				secrets[id] = value;
 			});
 		});
 
 		console.log("All secrets:");
 		console.log(JSON.stringify(secrets, null, 2));
 
-		core.setOutput("secrets", "::add-mask::" + JSON.stringify(secrets));
+		core.setOutput("secrets", JSON.stringify(secrets));
 	} catch (error) {
 		// It's possible for the Error constructor to be modified to be anything
 		// in JavaScript, so the following code accounts for this possibility.
