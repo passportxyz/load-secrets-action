@@ -30160,7 +30160,8 @@ const loadAllSecretsAction = async () => {
         // Download and install the CLI
         await installCLI();
         const itemsList = dist.item.list({ vault: "Test" });
-        console.log(JSON.stringify(itemsList, null, 2));
+        const items = dist.item.get(JSON.stringify(itemsList));
+        console.log(JSON.stringify(items, null, 2));
         // Load secrets
         await loadSecrets(shouldExportEnv);
     }

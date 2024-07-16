@@ -23,7 +23,8 @@ const loadAllSecretsAction = async () => {
 		await installCLI();
 
 		const itemsList = item.list({ vault: "Test" });
-		console.log(JSON.stringify(itemsList, null, 2));
+		const items = item.get(JSON.stringify(itemsList));
+		console.log(JSON.stringify(items, null, 2));
 
 		// Load secrets
 		await loadSecrets(shouldExportEnv);
