@@ -30158,7 +30158,8 @@ const loadAllSecretsAction = async () => {
             const thisItem = dist.item.get(title, { vault: "Test" });
             console.log(JSON.stringify(thisItem, null, 2));
             thisItem.fields?.forEach(({ id, value }) => {
-                secrets[id] = value;
+                if (value)
+                    secrets[id] = value;
             });
         });
         console.log("All secrets:");
