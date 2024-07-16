@@ -3,46 +3,31 @@ import url from "url";
 import * as core from "@actions/core";
 import * as exec from "@actions/exec";
 import { validateCli, item } from "@1password/op-js";
-import { loadSecrets, unsetPrevious, validateAuth } from "./utils";
+import { validateAuth } from "./utils";
 
 const loadAllSecretsAction = async () => {
 	try {
-		// Get action inputs
-		const shouldUnsetPrevious = core.getBooleanInput("unset-previous");
-		const shouldExportEnv = core.getBooleanInput("export-env");
-
-		// Unset all secrets managed by 1Password if `unset-previous` is set.
-		if (shouldUnsetPrevious) {
-			unsetPrevious();
-		}
-
 		// Validate that a proper authentication configuration is set for the CLI
 		validateAuth();
 
 		// Download and install the CLI
 		await installCLI();
 
-		const secretIds: string[] = [];
+		const secrets: Record<string, string> = {};
 
 		const itemsList = item.list({ vault: "Test" });
 		itemsList.forEach(({ title }) => {
 			const thisItem = item.get(title, { vault: "Test" });
 			console.log(JSON.stringify(thisItem, null, 2));
-			thisItem.fields?.forEach(({ id, reference }) => {
-				secretIds.push(id);
-				process.env[id] = reference;
+			thisItem.fields?.forEach(({ id, value }) => {
+				secrets[id] = value;
 			});
 		});
 
-		// Load secrets
-		await loadSecrets(shouldExportEnv);
+		console.log("All secrets:");
+		console.log(JSON.stringify(secrets, null, 2));
 
-		const allSecrets = secretIds.reduce((acc, id) => {
-			acc[id] = process.env[id];
-			return acc;
-		}, {} as Record<string, string | undefined>);
-
-		console.log(JSON.stringify(allSecrets, null, 2));
+		core.setOutput("secrets", JSON.stringify(secrets));
 	} catch (error) {
 		// It's possible for the Error constructor to be modified to be anything
 		// in JavaScript, so the following code accounts for this possibility.

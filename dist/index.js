@@ -30056,18 +30056,18 @@ var external_path_default = /*#__PURE__*/__nccwpck_require__.n(external_path_);
 var external_url_ = __nccwpck_require__(7310);
 var external_url_default = /*#__PURE__*/__nccwpck_require__.n(external_url_);
 // EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js
-var core = __nccwpck_require__(2186);
+var lib_core = __nccwpck_require__(2186);
 // EXTERNAL MODULE: ./node_modules/@actions/exec/lib/exec.js
-var exec = __nccwpck_require__(1514);
+var lib_exec = __nccwpck_require__(1514);
 // EXTERNAL MODULE: ./node_modules/@1password/op-js/dist/index.js
 var dist = __nccwpck_require__(7091);
 ;// CONCATENATED MODULE: ./package.json
-const package_namespaceObject = {"i8":"2.0.0"};
+const package_namespaceObject = {};
 ;// CONCATENATED MODULE: ./src/constants.ts
 const envConnectHost = "OP_CONNECT_HOST";
 const envConnectToken = "OP_CONNECT_TOKEN";
 const envServiceAccountToken = "OP_SERVICE_ACCOUNT_TOKEN";
-const envManagedVariables = "OP_MANAGED_VARIABLES";
+const constants_envManagedVariables = "OP_MANAGED_VARIABLES";
 const authErr = `Authentication error with environment variables: you must set either 1) ${envServiceAccountToken}, or 2) both ${envConnectHost} and ${envConnectToken}.`;
 
 ;// CONCATENATED MODULE: ./src/utils.ts
@@ -30080,13 +30080,13 @@ const validateAuth = () => {
     const isConnect = process.env[envConnectHost] && process.env[envConnectToken];
     const isServiceAccount = process.env[envServiceAccountToken];
     if (isConnect && isServiceAccount) {
-        core.warning("WARNING: Both service account and Connect credentials are provided. Connect credentials will take priority.");
+        lib_core.warning("WARNING: Both service account and Connect credentials are provided. Connect credentials will take priority.");
     }
     if (!isConnect && !isServiceAccount) {
         throw new Error(authErr);
     }
     const authType = isConnect ? "Connect" : "Service account";
-    core.info(`Authenticated with ${authType}.`);
+    lib_core.info(`Authenticated with ${authType}.`);
 };
 const extractSecret = (envName, shouldExportEnv) => {
     core.info(`Populating variable: ${envName}`);
@@ -30094,7 +30094,7 @@ const extractSecret = (envName, shouldExportEnv) => {
     if (!ref) {
         return;
     }
-    const secretValue = dist.read.parse(ref);
+    const secretValue = read.parse(ref);
     if (!secretValue) {
         return;
     }
@@ -30108,10 +30108,10 @@ const extractSecret = (envName, shouldExportEnv) => {
 };
 const loadSecrets = async (shouldExportEnv) => {
     // Pass User-Agent Information to the 1Password CLI
-    (0,dist.setClientInfo)({
+    setClientInfo({
         name: "1Password GitHub Action",
         id: "GHA",
-        build: (0,dist.semverToInt)(package_namespaceObject.i8),
+        build: semverToInt(version),
     });
     // Load secrets from environment variables using 1Password CLI.
     // Iterate over them to find 1Password references, extract the secret values,
@@ -30148,34 +30148,22 @@ const unsetPrevious = () => {
 
 const loadAllSecretsAction = async () => {
     try {
-        // Get action inputs
-        const shouldUnsetPrevious = core.getBooleanInput("unset-previous");
-        const shouldExportEnv = core.getBooleanInput("export-env");
-        // Unset all secrets managed by 1Password if `unset-previous` is set.
-        if (shouldUnsetPrevious) {
-            unsetPrevious();
-        }
         // Validate that a proper authentication configuration is set for the CLI
         validateAuth();
         // Download and install the CLI
         await installCLI();
-        const secretIds = [];
+        const secrets = {};
         const itemsList = dist.item.list({ vault: "Test" });
         itemsList.forEach(({ title }) => {
             const thisItem = dist.item.get(title, { vault: "Test" });
             console.log(JSON.stringify(thisItem, null, 2));
-            thisItem.fields?.forEach(({ id, reference }) => {
-                secretIds.push(id);
-                process.env[id] = reference;
+            thisItem.fields?.forEach(({ id, value }) => {
+                secrets[id] = value;
             });
         });
-        // Load secrets
-        await loadSecrets(shouldExportEnv);
-        const allSecrets = secretIds.reduce((acc, id) => {
-            acc[id] = process.env[id];
-            return acc;
-        }, {});
-        console.log(JSON.stringify(allSecrets, null, 2));
+        console.log("All secrets:");
+        console.log(JSON.stringify(secrets, null, 2));
+        lib_core.setOutput("secrets", JSON.stringify(secrets));
     }
     catch (error) {
         // It's possible for the Error constructor to be modified to be anything
@@ -30188,7 +30176,7 @@ const loadAllSecretsAction = async () => {
         else {
             String(error);
         }
-        core.setFailed(message);
+        lib_core.setFailed(message);
     }
 };
 // This function's name is an exception from the naming convention
@@ -30203,12 +30191,12 @@ const installCLI = async () => {
         const currentDir = external_path_default().dirname(currentFile);
         const parentDir = external_path_default().resolve(currentDir, "..");
         // Execute bash script
-        const cmdOut = await exec.getExecOutput(`sh -c "` + parentDir + `/install_cli.sh"`);
+        const cmdOut = await lib_exec.getExecOutput(`sh -c "` + parentDir + `/install_cli.sh"`);
         // Add path to 1Password CLI to $PATH
         const outArr = cmdOut.stdout.split("\n");
         if (outArr[0] && process.env.PATH) {
             const cliPath = outArr[0]?.replace(/^(::debug::OP_INSTALL_DIR: )/, "");
-            core.addPath(cliPath);
+            lib_core.addPath(cliPath);
         }
     });
 };
