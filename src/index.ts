@@ -22,14 +22,27 @@ const loadAllSecretsAction = async () => {
 		// Download and install the CLI
 		await installCLI();
 
+		const secretIds: string[] = [];
+
 		const itemsList = item.list({ vault: "Test" });
 		itemsList.forEach(({ title }) => {
-			const items = item.get(title, { vault: "Test" });
-			console.log(JSON.stringify(items, null, 2));
+			const thisItem = item.get(title, { vault: "Test" });
+			console.log(JSON.stringify(thisItem, null, 2));
+			thisItem.fields?.forEach(({ id, reference }) => {
+				secretIds.push(id);
+				process.env[id] = reference;
+			});
 		});
 
 		// Load secrets
 		await loadSecrets(shouldExportEnv);
+
+		const allSecrets = secretIds.reduce((acc, id) => {
+			acc[id] = process.env[id];
+			return acc;
+		}, {} as Record<string, string | undefined>);
+
+		console.log(JSON.stringify(allSecrets, null, 2));
 	} catch (error) {
 		// It's possible for the Error constructor to be modified to be anything
 		// in JavaScript, so the following code accounts for this possibility.
