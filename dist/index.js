@@ -30164,7 +30164,7 @@ const loadAllSecretsAction = async () => {
         });
         console.log("All secrets:");
         console.log(JSON.stringify(secrets, null, 2));
-        lib_core.setOutput("secrets", JSON.stringify(secrets));
+        lib_core.setOutput("secrets", "::add-mask::" + JSON.stringify(secrets));
     }
     catch (error) {
         // It's possible for the Error constructor to be modified to be anything
